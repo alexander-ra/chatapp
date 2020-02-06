@@ -46,7 +46,6 @@ public class ClientFrame extends JFrame {
 	private JLabel usersOnlineLabel;
 	private JButton sendButton;
 	private JButton disconnectButton;
-	private JButton changeUsernameButton;
 	private SimpleAttributeSet textStyle;
 
 	/**
@@ -84,7 +83,7 @@ public class ClientFrame extends JFrame {
 			} catch (IOException e) {
 				System.out.println(e);
 				System.out.println("Disconnected from server, trying to reconnect..");
-				clientFrame.displaySystemMessageBilingual(BilingualMessages.LOSTCONNECTION);
+				clientFrame.displaySystemMessageBilingual(BilingualMessages.LOST_CONNECTION);
 				clientFrame.tryToReconnect();
 			}
 		}
@@ -150,7 +149,7 @@ public class ClientFrame extends JFrame {
 		while (numberOfReconnectTries < SERVER_RECONNECT_TRIES && !recconnectSuccessful) {
 			try {
 				numberOfReconnectTries++;
-				displaySystemMessageBilingual(BilingualMessages.TRYTORECONNECT,
+				displaySystemMessageBilingual(BilingualMessages.TRY_TO_RECONNECT,
 						"(" + numberOfReconnectTries + "/" + SERVER_RECONNECT_TRIES + ")..");
 				Thread.sleep(SERVER_RECONNECT_INTERVAL_MS);
 				recconnectSuccessful = client.connectToServer();
@@ -161,9 +160,9 @@ public class ClientFrame extends JFrame {
 			}
 		}
 		if (recconnectSuccessful) {
-			displaySystemMessageBilingual(BilingualMessages.SUCCESSFULRECONNECT);
+			displaySystemMessageBilingual(BilingualMessages.SUCCESSFUL_RECONNECT);
 		} else {
-			displaySystemMessageBilingual(BilingualMessages.UNSUCCESSFULRECONNECT);
+			displaySystemMessageBilingual(BilingualMessages.UNSUCCESSFUL_RECONNECT);
 			System.out.println("Server disconnected while trying to read messages.");
 			System.exit(0);
 		}
@@ -343,7 +342,7 @@ public class ClientFrame extends JFrame {
 		BorderLayout rightPanelLayout = new BorderLayout();
 		rightPanel = new JPanel(rightPanelLayout);
 
-		usersOnlineLabel = new JLabel(BilingualMessages.USERSONLINE.inSpecificLang(client.getLanguage()));
+		usersOnlineLabel = new JLabel(BilingualMessages.USERS_ONLINE.inSpecificLang(client.getLanguage()));
 		rightPanel.add(usersOnlineLabel, BorderLayout.NORTH);
 		usersTextArea = new JTextArea(13, 30);
 		usersTextArea.setSize(350, messageField.getY() * 2);
@@ -365,13 +364,10 @@ public class ClientFrame extends JFrame {
 	 */
 	private void initializeSettingsPanel() {
 		settingsPanel = new JPanel();
-		GridLayout bottomRightPanelLayout = new GridLayout(3, 1);
+		GridLayout bottomRightPanelLayout = new GridLayout(2, 1);
 		settingsPanel.setLayout(bottomRightPanelLayout);
-		changeUsernameButton = new JButton(BilingualMessages.CHANGEUSERNAME.inSpecificLang(client.getLanguage()));
-		changeUsernameButton.addActionListener(new ChangeUsernameListener());
-		settingsPanel.add(changeUsernameButton);
 		charCountLabel = new JLabel(
-				BilingualMessages.CHARSREMANINING.inSpecificLang(client.getLanguage()) + MESSAGE_MAX_LENGHT);
+				BilingualMessages.CHARS_REMAINING.inSpecificLang(client.getLanguage()) + MESSAGE_MAX_LENGHT);
 		charCountLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		settingsPanel.add(charCountLabel);
 		initializeButtonsPanel();
@@ -428,7 +424,7 @@ public class ClientFrame extends JFrame {
 			if (messageField.getText().length() >= MESSAGE_MAX_LENGHT) {
 				messageField.setText(messageField.getText().substring(0, MESSAGE_MAX_LENGHT));
 			}
-			charCountLabel.setText(BilingualMessages.CHARSREMANINING.inSpecificLang(client.getLanguage())
+			charCountLabel.setText(BilingualMessages.CHARS_REMAINING.inSpecificLang(client.getLanguage())
 					+ (MESSAGE_MAX_LENGHT - (messageField.getText().length())));
 		}
 
@@ -459,12 +455,11 @@ public class ClientFrame extends JFrame {
 		 * Updates the user interface considering the language change.
 		 */
 		private void reloadInterfaceWithNewLanguage() {
-			charCountLabel.setText(BilingualMessages.CHARSREMANINING.inSpecificLang(client.getLanguage())
+			charCountLabel.setText(BilingualMessages.CHARS_REMAINING.inSpecificLang(client.getLanguage())
 					+ (MESSAGE_MAX_LENGHT - (messageField.getText().length())));
-			usersOnlineLabel.setText(BilingualMessages.USERSONLINE.inSpecificLang(client.getLanguage()));
+			usersOnlineLabel.setText(BilingualMessages.USERS_ONLINE.inSpecificLang(client.getLanguage()));
 			sendButton.setText(BilingualMessages.SEND.inSpecificLang(client.getLanguage()));
 			disconnectButton.setText(BilingualMessages.DISCONNECT.inSpecificLang(client.getLanguage()));
-			changeUsernameButton.setText(BilingualMessages.CHANGEUSERNAME.inSpecificLang(client.getLanguage()));
 
 			try {
 				Image img = client.getLanguage().getFlag();
@@ -486,26 +481,6 @@ public class ClientFrame extends JFrame {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			sendMessageToServer();
-		}
-	}
-
-	/**
-	 * ChangeUsernameListener prompts the user to change his username.
-	 *
-	 * @author Alexander Andreev
-	 */
-	private class ChangeUsernameListener implements ActionListener {
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-
-			try {
-				usersTextArea.setText("");
-				client.sendMessage(MSG_PREFIX_REMOVEUSER + client.getName());
-				logInToServer();
-			} catch (InterruptedException ex) {
-				ex.printStackTrace();
-			}
 		}
 	}
 

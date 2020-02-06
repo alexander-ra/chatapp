@@ -17,14 +17,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 public class MessagesManager {
 
 	public static final int UNPROCESSED_MESSAGES_CAPACITY = 512;
-	public static final String MSG_PREFIX_CONREQUEST = "CONNECTION_REQUEST:";
-	public static final String MSG_PREFIX_ADDUSER = "ADD_USER:";
-	public static final String MSG_PREFIX_REMOVEUSER = "REMOVE_USER:";
-	public static final String MSG_CODE_CONN_ACCEPTED = "CONNECTION_ACCEPTED";
-	public static final String MSG_CODE_CONN_DECLINED = "CONNECTION_DECLINED";
-	public static final String MSG_CODE_REFRESH_USERLIST = "REFRESH_USERLIST";
-	public static final String MSG_CODE_CHANGE_LANG = "CHANGE_LANGUAGE:";
-	public static final String MSG_CODE_WHISPER = "/w";
 	private Server server;
 	private volatile ArrayBlockingQueue<String> unprocessedClientMessages;
 	private volatile ArrayBlockingQueue<String> unprocessedServerMessages;
@@ -249,7 +241,7 @@ public class MessagesManager {
 	 * Sends a message to the server's interface, telling it to update the user list.
 	 */
 	public void sendRefreshMessageToServerFrame() {
-		sendMessageToServerFrame(MSG_CODE_REFRESH_USERLIST);
+		sendMessageToServerFrame(CodeMessages.REFRESH_USERLIST.getMessage());
 	}
 
 	/**
@@ -280,7 +272,7 @@ public class MessagesManager {
 	 * @throws IOException
 	 */
 	public void sendAcceptedMessageToClient(Socket client) throws IOException {
-		sendMessageToClient(MSG_CODE_CONN_ACCEPTED, client);
+		sendMessageToClient(CodeMessages.CONN_ACCEPTED.getMessage(), client);
 	}
 
 	/**
@@ -291,7 +283,7 @@ public class MessagesManager {
 	 * @throws IOException
 	 */
 	public void sendDeclinedMessageToClient(Socket client) throws IOException {
-		sendMessageToClient(MSG_CODE_CONN_DECLINED, client);
+		sendMessageToClient(CodeMessages.CONN_DECLINED.getMessage(), client);
 	}
 
 	/**
@@ -311,7 +303,7 @@ public class MessagesManager {
 	 * @param userToBeAdded
 	 */
 	public void sendAddUserMessageToEveryone(String userToBeAdded) {
-		sendMessageToAllUsers(MSG_PREFIX_ADDUSER + userToBeAdded);
+		sendMessageToAllUsers(CodeMessages.ADDUSER.getMessage() + userToBeAdded);
 	}
 
 	/**
@@ -331,7 +323,7 @@ public class MessagesManager {
 	 * @param userToBeRemoved
 	 */
 	public void sendRemoveUserMessageToEveryone(String userToBeRemoved) {
-		sendMessageToAllUsers(MSG_PREFIX_REMOVEUSER + userToBeRemoved);
+		sendMessageToAllUsers(CodeMessages.REMOVEUSER.getMessage() + userToBeRemoved);
 	}
 
 	/**
@@ -343,7 +335,7 @@ public class MessagesManager {
 	 */
 	public void sendUsersListToClient(Socket client) throws IOException {
 		for (String user : server.getNamesToConnections().keySet()) {
-			sendMessageToClient(MSG_PREFIX_ADDUSER + user, client);
+			sendMessageToClient(CodeMessages.ADDUSER.getMessage() + user, client);
 		}
 	}
 

@@ -1,5 +1,6 @@
 package edu.uni.ruse.client;
 
+import edu.uni.ruse.utilities.CodeMessages;
 import edu.uni.ruse.utilities.InterfaceLang;
 import edu.uni.ruse.utilities.MessagesManager;
 
@@ -17,8 +18,6 @@ import java.net.Socket;
 public class Client {
 
 	private static final int WAIT_INTERVAL_MS = 1000;
-	private static final String MSG_PREFIX_CONREQUEST = "CONNECTION_REQUEST:";
-	private static final String MSG_CODE_CONN_ACCEPTED = "CONNECTION_ACCEPTED";
 	private static final InterfaceLang DEFAULT_LANGUAGE = InterfaceLang.EN;
 	private InterfaceLang language = DEFAULT_LANGUAGE;
 	private Socket connection;
@@ -92,7 +91,7 @@ public class Client {
 	 * @throws InterruptedException
 	 */
 	public boolean acceptedFromServer() {
-		sendMessage(MSG_PREFIX_CONREQUEST + name);
+		sendMessage(CodeMessages.CONREQUEST.getMessage() + name);
 		try {
 			Thread.sleep(250);
 		} catch (InterruptedException e) {
@@ -107,7 +106,7 @@ public class Client {
 			System.out.println("IOException while trying to be accepted from server.");
 		}
 		receivedMessage = MessagesManager.removeColorCodeFromMessage(receivedMessage);
-		return MSG_CODE_CONN_ACCEPTED.equals(receivedMessage);
+		return CodeMessages.CONN_ACCEPTED.getMessage().equals(receivedMessage);
 	}
 
 	/**

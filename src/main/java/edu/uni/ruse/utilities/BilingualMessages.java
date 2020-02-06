@@ -10,14 +10,13 @@ package edu.uni.ruse.utilities;
 public enum BilingualMessages {
 	SEND("Send", "Изпрати"), 
 	DISCONNECT("Disconnect", "Напусни"),
-	CHANGEUSERNAME("Change username", "Смени потребителско име"),
-	DISCONNECTING("Disconnecting..", "Напускане.."), 
-	USERSONLINE("Users Online:","Свързани потребители:"), 
-	CHARSREMANINING("Characters remanining: ", "Оставащи символи: "), 
-	LOSTCONNECTION("Lost connection with server.","Връзката със сървъра се прекъсна."), 
-	TRYTORECONNECT("Trying to reconnect","Опит за възстановяване на връзката със сървъра"), 
-	SUCCESSFULRECONNECT("Reconnect successful.","Връзката със сървъра е възстановена успешно."), 
-	UNSUCCESSFULRECONNECT("Reconnect failed.", "Опита да се възстанови връзката беше неуспешен.");
+	DISCONNECTING("Disconnecting..", "Напускане.."),
+	USERS_ONLINE("Users Online:","Свързани потребители:"),
+	CHARS_REMAINING("Characters remanining: ", "Оставащи символи: "),
+	LOST_CONNECTION("Lost connection with server.","Връзката със сървъра се прекъсна."),
+	TRY_TO_RECONNECT("Trying to reconnect","Опит за възстановяване на връзката със сървъра"),
+	SUCCESSFUL_RECONNECT("Reconnect successful.","Връзката със сървъра е възстановена успешно."),
+	UNSUCCESSFUL_RECONNECT("Reconnect failed.", "Опита да се възстанови връзката беше неуспешен.");
 
 	private final String enMessage;
 	private final String bgMessage;
@@ -38,7 +37,7 @@ public enum BilingualMessages {
 	/**
 	 * Returns the English message.
 	 * 
-	 * @return
+	 * @return message in english
 	 */
 	public String inEnglish() {
 		return enMessage;
@@ -47,7 +46,7 @@ public enum BilingualMessages {
 	/**
 	 * Return the Bulgarian message.
 	 * 
-	 * @return
+	 * @return message in bulgarian
 	 */
 	public String inBulgarian() {
 		return bgMessage;

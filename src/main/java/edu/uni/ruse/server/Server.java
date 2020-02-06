@@ -1,5 +1,7 @@
 package edu.uni.ruse.server;
 
+import com.sun.org.apache.bcel.internal.classfile.Code;
+import edu.uni.ruse.utilities.CodeMessages;
 import edu.uni.ruse.utilities.InterfaceLang;
 import edu.uni.ruse.utilities.MessagesManager;
 
@@ -153,7 +155,7 @@ public class Server {
         try {
             connectionToBeAccepted = serverSocket.accept();
             String message = messagesManager.retrieveMessageFromClient(connectionToBeAccepted);
-            if (message.startsWith(MessagesManager.MSG_PREFIX_CONREQUEST)) {
+            if (message.startsWith(CodeMessages.CONREQUEST.getMessage())) {
                 nameOfNextUserToJoin = getUserNameFromConnectionRequest(message);
                 if (userCanJoin(nameOfNextUserToJoin)) {
                     acceptNewClient(nameOfNextUserToJoin, connectionToBeAccepted);
@@ -223,7 +225,7 @@ public class Server {
      * @return user name
      */
     public String getUserNameFromConnectionRequest(String request) {
-        return request.substring(MessagesManager.MSG_PREFIX_CONREQUEST.length());
+        return request.substring(CodeMessages.CONREQUEST.getMessage().length());
     }
 
     /**
@@ -295,28 +297,35 @@ public class Server {
         if (!messagesManager.getUnprocessedClientMessages().isEmpty()) {
             try {
                 String message = messagesManager.getUnprocessedClientMessages().take();
-                if (message.startsWith(MessagesManager.MSG_PREFIX_REMOVEUSER)) {
-                    String userToBeRemoved = message.substring(MessagesManager.MSG_PREFIX_REMOVEUSER.length());
+                if (message.startsWith(CodeMessages.REMOVEUSER.getMessage())) {
+                    String userToBeRemoved = message.substring(CodeMessages.REMOVEUSER.getMessage().length());
                     removeUser(userToBeRemoved);
                     messagesManager.sendUserLeftMessageToEveryone(userToBeRemoved);
                     messagesManager.sendRemoveUserMessageToEveryone(userToBeRemoved);
-                } else if (message.startsWith(MessagesManager.MSG_CODE_CHANGE_LANG)) {
-                    String userToChangeLang = message.substring(MessagesManager.MSG_CODE_CHANGE_LANG.length());
+                } else if (message.startsWith(CodeMessages.CHANGE_LANG.getMessage())) {
+                    String userToChangeLang = message.substring(CodeMessages.CHANGE_LANG.getMessage().length());
                     messagesManager.changeUserLanguage(namesToConnections.get(userToChangeLang));
-                } else if (message.toLowerCase().indexOf(MessagesManager.MSG_CODE_WHISPER) != -1 &&
-                        message.toLowerCase().indexOf(MessagesManager.MSG_CODE_WHISPER) < message.indexOf(" ", message.indexOf(" ") + 1)) {
-                    String sender = message.substring(0, message.toLowerCase().indexOf(": " + MessagesManager.MSG_CODE_WHISPER));
-                    String restOfMessage = message.substring(message.toLowerCase().indexOf(MessagesManager.MSG_CODE_WHISPER) +
-							MessagesManager.MSG_CODE_WHISPER.length() + 1);
+                } else if (message.toLowerCase().indexOf(CodeMessages.WHISPER.getMessage()) != -1 &&
+                        message.toLowerCase().indexOf(CodeMessages.WHISPER.getMessage()) < message.indexOf(" ", message.indexOf(" ") + 1)) {
+                    String sender = message.substring(0, message.toLowerCase().indexOf(": " + CodeMessages.WHISPER.getMessage()));
+                    String restOfMessage = message.substring(message.toLowerCase().indexOf(CodeMessages.WHISPER.getMessage()) +
+                            CodeMessages.WHISPER.getMessage().length() + 1);
                     String receiver = restOfMessage.substring(0, restOfMessage.indexOf(" "));
                     restOfMessage = restOfMessage.substring(restOfMessage.indexOf(" "));
-					try {
-						messagesManager.sendMessageToClient(getCurrentTime() + "Whisper from (" + sender +  "):" + restOfMessage, getNamesToConnections().get(receiver), Color.MAGENTA);
-						messagesManager.sendMessageToClient(getCurrentTime() + "Whisper to (" + receiver + "):" + restOfMessage, getNamesToConnections().get(sender), Color.BLUE);
 
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
+                    if (namesToConnections.containsKey(receiver) && namesToConnections.containsKey(sender)) {
+                        try {
+                            messagesManager.sendMessageToClient(getCurrentTime() + "Whisper from (" + sender +  "):" + restOfMessage, getNamesToConnections().get(receiver), Color.MAGENTA);
+                            messagesManager.sendMessageToClient(getCurrentTime() + "Whisper to (" + receiver + "):" + restOfMessage, getNamesToConnections().get(sender), Color.BLUE);
+
+                        } catch (IOException e) {
+                            System.out.println(e);
+                            System.out.println("Error while trying to send whisper message");
+                        }
+                    } else {
+                        System.out.println("Either sender (" + sender + ") or receiver (" + receiver +
+                                ") does not exsist in the application while whisper message is trying to be send");
+                    }
 				} else {
                     messagesManager.sendMessageToAllUsers(getCurrentTime() + message);
                 }
