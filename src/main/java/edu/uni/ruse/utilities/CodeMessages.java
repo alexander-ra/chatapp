@@ -14,6 +14,7 @@ public enum CodeMessages {
     CONN_DECLINED("CONNECTION_DECLINED"),
     REFRESH_USERLIST("REFRESH_USERLIST"),
     CHANGE_LANG("CHANGE_LANGUAGE:"),
+    CHANGE_USERNAME("/changename"),
     WHISPER("/w");
 
     private final String message;

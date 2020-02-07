@@ -14,6 +14,7 @@ import javax.swing.text.*;
 
 import edu.uni.ruse.utilities.BilingualMessages;
 import edu.uni.ruse.client.Client;
+import edu.uni.ruse.utilities.CodeMessages;
 import edu.uni.ruse.utilities.InterfaceLang;
 import edu.uni.ruse.utilities.MessagesManager;
 
@@ -27,9 +28,6 @@ public class ClientFrame extends JFrame {
 
 	private static final long serialVersionUID = -8613537186396001161L;
 	private static final int MESSAGE_MAX_LENGHT = 200;
-	private static final String MSG_PREFIX_ADDUSER = "ADD_USER:";
-	private static final String MSG_PREFIX_REMOVEUSER = "REMOVE_USER:";
-	public static final String MSG_CODE_CHANGE_LANG = "CHANGE_LANGUAGE:";
 	public static final int SERVER_RECONNECT_INTERVAL_MS = 10000;
 	public static final int SERVER_RECONNECT_TRIES = 4;
 	private static List<String> users;
@@ -97,19 +95,19 @@ public class ClientFrame extends JFrame {
 	private static void processReceivedMessage(ClientFrame clientFrame) {
 		String message = MessagesManager.removeColorCodeFromMessage(clientFrame.client.getReceivedMessage());
 		if (clientFrame.receivedMessageIsToAddUser()) {
-			String userToAdd = message.substring(MSG_PREFIX_ADDUSER.length());
+			String userToAdd = message.substring(CodeMessages.ADDUSER.getMessage().length());
 			if (!userToAdd.equals(clientFrame.client.getName())) {
 				System.out.println("Adding user '" + userToAdd + "' to list of online users");
 				users.add(userToAdd);
 				clientFrame.reVisualiseOnlineUsers();
 			}
+		} else if (clientFrame.receivedMessageIsToRenameUser()) {
+			String newName = message.substring(message.toLowerCase().indexOf(CodeMessages.CHANGE_USERNAME.getMessage()) +
+					CodeMessages.CHANGE_USERNAME.getMessage().length());
+			clientFrame.client.setName(newName);
+			clientFrame.setTitle("ChatApp: " + newName);
 		} else if (clientFrame.receivedMessageIsToRemoveUser()) {
-			String userToRemove = message.substring(MSG_PREFIX_REMOVEUSER.length());
-			users.remove(userToRemove);
-			System.out.println("Removing user '" + userToRemove + "' to list of online users");
-			clientFrame.reVisualiseOnlineUsers();
-		} else if (clientFrame.receivedMessageIsToRemoveUser()) {
-			String userToRemove = message.substring(MSG_PREFIX_REMOVEUSER.length());
+			String userToRemove = message.substring(CodeMessages.REMOVEUSER.getMessage().length());
 			users.remove(userToRemove);
 			System.out.println("Removing user '" + userToRemove + "' to list of online users");
 			clientFrame.reVisualiseOnlineUsers();
@@ -226,7 +224,7 @@ public class ClientFrame extends JFrame {
 		}
 		if (chosedOption == JOptionPane.YES_OPTION) {
 			displaySystemMessageBilingual(BilingualMessages.DISCONNECTING);
-			client.sendMessage(MSG_PREFIX_REMOVEUSER + client.getName());
+			client.sendMessage(CodeMessages.REMOVEUSER.getMessage() + client.getName());
 			System.exit(0);
 		}
 	}
@@ -237,7 +235,12 @@ public class ClientFrame extends JFrame {
 	 * @return true if the message is telling to remove a specific user.
 	 */
 	private boolean receivedMessageIsToRemoveUser() {
-		return client.getReceivedMessage().startsWith(MSG_PREFIX_REMOVEUSER);
+		return client.getReceivedMessage().startsWith(CodeMessages.REMOVEUSER.getMessage());
+	}
+
+	private boolean receivedMessageIsToRenameUser() {
+		String message = client.getReceivedMessage();
+		return message.startsWith(CodeMessages.CHANGE_USERNAME.getMessage());
 	}
 
 	/**
@@ -246,7 +249,7 @@ public class ClientFrame extends JFrame {
 	 * @return true if the message is telling to add a specific user.
 	 */
 	private boolean receivedMessageIsToAddUser() {
-		return client.getReceivedMessage().startsWith(MSG_PREFIX_ADDUSER);
+		return client.getReceivedMessage().startsWith(CodeMessages.ADDUSER.getMessage());
 	}
 
 	/**
@@ -447,7 +450,7 @@ public class ClientFrame extends JFrame {
 			} else if (client.getLanguage() == InterfaceLang.EN) {
 				client.setLanguage(InterfaceLang.BG);
 			}
-			client.sendMessage(MSG_CODE_CHANGE_LANG + client.getName());
+			client.sendMessage(CodeMessages.CHANGE_LANG.getMessage() + client.getName());
 			reloadInterfaceWithNewLanguage();
 		}
 

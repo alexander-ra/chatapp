@@ -159,6 +159,8 @@ public class Client {
 		return name;
 	}
 
+	public void setName(String name) { this.name = name; }
+
 	public InterfaceLang getLanguage() {
 		return language;
 	}
