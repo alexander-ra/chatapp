@@ -14,6 +14,7 @@ import javax.swing.text.*;
 
 import edu.uni.ruse.utilities.BilingualMessages;
 import edu.uni.ruse.client.Client;
+import edu.uni.ruse.utilities.CodeMessages;
 import edu.uni.ruse.utilities.InterfaceLang;
 import edu.uni.ruse.utilities.MessagesManager;
 
@@ -27,9 +28,6 @@ public class ClientFrame extends JFrame {
 
 	private static final long serialVersionUID = -8613537186396001161L;
 	private static final int MESSAGE_MAX_LENGHT = 200;
-	private static final String MSG_PREFIX_ADDUSER = "ADD_USER:";
-	private static final String MSG_PREFIX_REMOVEUSER = "REMOVE_USER:";
-	public static final String MSG_CODE_CHANGE_LANG = "CHANGE_LANGUAGE:";
 	public static final int SERVER_RECONNECT_INTERVAL_MS = 10000;
 	public static final int SERVER_RECONNECT_TRIES = 4;
 	private static List<String> users;
@@ -46,7 +44,6 @@ public class ClientFrame extends JFrame {
 	private JLabel usersOnlineLabel;
 	private JButton sendButton;
 	private JButton disconnectButton;
-	private JButton changeUsernameButton;
 	private SimpleAttributeSet textStyle;
 
 	/**
@@ -84,7 +81,7 @@ public class ClientFrame extends JFrame {
 			} catch (IOException e) {
 				System.out.println(e);
 				System.out.println("Disconnected from server, trying to reconnect..");
-				clientFrame.displaySystemMessageBilingual(BilingualMessages.LOSTCONNECTION);
+				clientFrame.displaySystemMessageBilingual(BilingualMessages.LOST_CONNECTION);
 				clientFrame.tryToReconnect();
 			}
 		}
@@ -98,19 +95,19 @@ public class ClientFrame extends JFrame {
 	private static void processReceivedMessage(ClientFrame clientFrame) {
 		String message = MessagesManager.removeColorCodeFromMessage(clientFrame.client.getReceivedMessage());
 		if (clientFrame.receivedMessageIsToAddUser()) {
-			String userToAdd = message.substring(MSG_PREFIX_ADDUSER.length());
+			String userToAdd = message.substring(CodeMessages.ADDUSER.getMessage().length());
 			if (!userToAdd.equals(clientFrame.client.getName())) {
 				System.out.println("Adding user '" + userToAdd + "' to list of online users");
 				users.add(userToAdd);
 				clientFrame.reVisualiseOnlineUsers();
 			}
+		} else if (clientFrame.receivedMessageIsToRenameUser()) {
+			String newName = message.substring(message.toLowerCase().indexOf(CodeMessages.CHANGE_USERNAME.getMessage()) +
+					CodeMessages.CHANGE_USERNAME.getMessage().length());
+			clientFrame.client.setName(newName);
+			clientFrame.setTitle("ChatApp: " + newName);
 		} else if (clientFrame.receivedMessageIsToRemoveUser()) {
-			String userToRemove = message.substring(MSG_PREFIX_REMOVEUSER.length());
-			users.remove(userToRemove);
-			System.out.println("Removing user '" + userToRemove + "' to list of online users");
-			clientFrame.reVisualiseOnlineUsers();
-		} else if (clientFrame.receivedMessageIsToRemoveUser()) {
-			String userToRemove = message.substring(MSG_PREFIX_REMOVEUSER.length());
+			String userToRemove = message.substring(CodeMessages.REMOVEUSER.getMessage().length());
 			users.remove(userToRemove);
 			System.out.println("Removing user '" + userToRemove + "' to list of online users");
 			clientFrame.reVisualiseOnlineUsers();
@@ -150,7 +147,7 @@ public class ClientFrame extends JFrame {
 		while (numberOfReconnectTries < SERVER_RECONNECT_TRIES && !recconnectSuccessful) {
 			try {
 				numberOfReconnectTries++;
-				displaySystemMessageBilingual(BilingualMessages.TRYTORECONNECT,
+				displaySystemMessageBilingual(BilingualMessages.TRY_TO_RECONNECT,
 						"(" + numberOfReconnectTries + "/" + SERVER_RECONNECT_TRIES + ")..");
 				Thread.sleep(SERVER_RECONNECT_INTERVAL_MS);
 				recconnectSuccessful = client.connectToServer();
@@ -161,9 +158,9 @@ public class ClientFrame extends JFrame {
 			}
 		}
 		if (recconnectSuccessful) {
-			displaySystemMessageBilingual(BilingualMessages.SUCCESSFULRECONNECT);
+			displaySystemMessageBilingual(BilingualMessages.SUCCESSFUL_RECONNECT);
 		} else {
-			displaySystemMessageBilingual(BilingualMessages.UNSUCCESSFULRECONNECT);
+			displaySystemMessageBilingual(BilingualMessages.UNSUCCESSFUL_RECONNECT);
 			System.out.println("Server disconnected while trying to read messages.");
 			System.exit(0);
 		}
@@ -227,7 +224,7 @@ public class ClientFrame extends JFrame {
 		}
 		if (chosedOption == JOptionPane.YES_OPTION) {
 			displaySystemMessageBilingual(BilingualMessages.DISCONNECTING);
-			client.sendMessage(MSG_PREFIX_REMOVEUSER + client.getName());
+			client.sendMessage(CodeMessages.REMOVEUSER.getMessage() + client.getName());
 			System.exit(0);
 		}
 	}
@@ -238,7 +235,12 @@ public class ClientFrame extends JFrame {
 	 * @return true if the message is telling to remove a specific user.
 	 */
 	private boolean receivedMessageIsToRemoveUser() {
-		return client.getReceivedMessage().startsWith(MSG_PREFIX_REMOVEUSER);
+		return client.getReceivedMessage().startsWith(CodeMessages.REMOVEUSER.getMessage());
+	}
+
+	private boolean receivedMessageIsToRenameUser() {
+		String message = client.getReceivedMessage();
+		return message.startsWith(CodeMessages.CHANGE_USERNAME.getMessage());
 	}
 
 	/**
@@ -247,7 +249,7 @@ public class ClientFrame extends JFrame {
 	 * @return true if the message is telling to add a specific user.
 	 */
 	private boolean receivedMessageIsToAddUser() {
-		return client.getReceivedMessage().startsWith(MSG_PREFIX_ADDUSER);
+		return client.getReceivedMessage().startsWith(CodeMessages.ADDUSER.getMessage());
 	}
 
 	/**
@@ -343,7 +345,7 @@ public class ClientFrame extends JFrame {
 		BorderLayout rightPanelLayout = new BorderLayout();
 		rightPanel = new JPanel(rightPanelLayout);
 
-		usersOnlineLabel = new JLabel(BilingualMessages.USERSONLINE.inSpecificLang(client.getLanguage()));
+		usersOnlineLabel = new JLabel(BilingualMessages.USERS_ONLINE.inSpecificLang(client.getLanguage()));
 		rightPanel.add(usersOnlineLabel, BorderLayout.NORTH);
 		usersTextArea = new JTextArea(13, 30);
 		usersTextArea.setSize(350, messageField.getY() * 2);
@@ -365,13 +367,10 @@ public class ClientFrame extends JFrame {
 	 */
 	private void initializeSettingsPanel() {
 		settingsPanel = new JPanel();
-		GridLayout bottomRightPanelLayout = new GridLayout(3, 1);
+		GridLayout bottomRightPanelLayout = new GridLayout(2, 1);
 		settingsPanel.setLayout(bottomRightPanelLayout);
-		changeUsernameButton = new JButton(BilingualMessages.CHANGEUSERNAME.inSpecificLang(client.getLanguage()));
-		changeUsernameButton.addActionListener(new ChangeUsernameListener());
-		settingsPanel.add(changeUsernameButton);
 		charCountLabel = new JLabel(
-				BilingualMessages.CHARSREMANINING.inSpecificLang(client.getLanguage()) + MESSAGE_MAX_LENGHT);
+				BilingualMessages.CHARS_REMAINING.inSpecificLang(client.getLanguage()) + MESSAGE_MAX_LENGHT);
 		charCountLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		settingsPanel.add(charCountLabel);
 		initializeButtonsPanel();
@@ -428,7 +427,7 @@ public class ClientFrame extends JFrame {
 			if (messageField.getText().length() >= MESSAGE_MAX_LENGHT) {
 				messageField.setText(messageField.getText().substring(0, MESSAGE_MAX_LENGHT));
 			}
-			charCountLabel.setText(BilingualMessages.CHARSREMANINING.inSpecificLang(client.getLanguage())
+			charCountLabel.setText(BilingualMessages.CHARS_REMAINING.inSpecificLang(client.getLanguage())
 					+ (MESSAGE_MAX_LENGHT - (messageField.getText().length())));
 		}
 
@@ -451,7 +450,7 @@ public class ClientFrame extends JFrame {
 			} else if (client.getLanguage() == InterfaceLang.EN) {
 				client.setLanguage(InterfaceLang.BG);
 			}
-			client.sendMessage(MSG_CODE_CHANGE_LANG + client.getName());
+			client.sendMessage(CodeMessages.CHANGE_LANG.getMessage() + client.getName());
 			reloadInterfaceWithNewLanguage();
 		}
 
@@ -459,12 +458,11 @@ public class ClientFrame extends JFrame {
 		 * Updates the user interface considering the language change.
 		 */
 		private void reloadInterfaceWithNewLanguage() {
-			charCountLabel.setText(BilingualMessages.CHARSREMANINING.inSpecificLang(client.getLanguage())
+			charCountLabel.setText(BilingualMessages.CHARS_REMAINING.inSpecificLang(client.getLanguage())
 					+ (MESSAGE_MAX_LENGHT - (messageField.getText().length())));
-			usersOnlineLabel.setText(BilingualMessages.USERSONLINE.inSpecificLang(client.getLanguage()));
+			usersOnlineLabel.setText(BilingualMessages.USERS_ONLINE.inSpecificLang(client.getLanguage()));
 			sendButton.setText(BilingualMessages.SEND.inSpecificLang(client.getLanguage()));
 			disconnectButton.setText(BilingualMessages.DISCONNECT.inSpecificLang(client.getLanguage()));
-			changeUsernameButton.setText(BilingualMessages.CHANGEUSERNAME.inSpecificLang(client.getLanguage()));
 
 			try {
 				Image img = client.getLanguage().getFlag();
@@ -486,26 +484,6 @@ public class ClientFrame extends JFrame {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			sendMessageToServer();
-		}
-	}
-
-	/**
-	 * ChangeUsernameListener prompts the user to change his username.
-	 *
-	 * @author Alexander Andreev
-	 */
-	private class ChangeUsernameListener implements ActionListener {
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-
-			try {
-				usersTextArea.setText("");
-				client.sendMessage(MSG_PREFIX_REMOVEUSER + client.getName());
-				logInToServer();
-			} catch (InterruptedException ex) {
-				ex.printStackTrace();
-			}
 		}
 	}
 
